@@ -1,61 +1,119 @@
-import Link from "next/link";
+'use client'
+import React, { useEffect, useState } from "react";
+import { api } from "~/trpc/react";
+import Card from "./_components/Card";
+import TopHeader from "./_components/TopHeader";
+import Banner from "./_components/Banner";
 
-import { CreatePost } from "~/app/_components/create-post";
-import { api } from "~/trpc/server";
-
-export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
-
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-        <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-          Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-        </h1>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-            href="https://create.t3.gg/en/usage/first-steps"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">First Steps →</h3>
-            <div className="text-lg">
-              Just the basics - Everything you need to know to set up your
-              database and authentication.
-            </div>
-          </Link>
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-            href="https://create.t3.gg/en/introduction"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">Documentation →</h3>
-            <div className="text-lg">
-              Learn more about Create T3 App, the libraries it uses, and how to
-              deploy it.
-            </div>
-          </Link>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-2xl text-white">
-            {hello ? hello.greeting : "Loading tRPC query..."}
-          </p>
-        </div>
-
-        <CrudShowcase />
-      </div>
-    </main>
-  );
+interface Thing {
+  id: number;
+  name: string;
+  isChecked: boolean;
+  createdAt: string; // Assuming createdAt is of type string, update it accordingly
+  updatedAt: string; // Assuming updatedAt is of type string, update it accordingly
 }
 
-async function CrudShowcase() {
-  // const latestPost = await api.post.getLatest();
+
+export default function Home() {
+  const [page, setPage] = useState(1);
+  const pageSize = 10; // Number of items per page
+  const [things, setThings] = useState<Thing[]>([])
+
+  const { status, data, error } = api.post.getLatest.useQuery<Thing[]>({
+    from: (page - 1) * pageSize, // Calculate the offset based on page number
+    items: pageSize, // Number of items to take per page
+  });
+
+  useEffect(() => {
+    setThings(data)
+  
+
+  }, [data])
+  
+
+  const { mutate } = api.post.modifyInterest.useMutation();
+
+  const handleCheckboxChange = async (id: number, isChecked: boolean)=> {
+    try {
+       mutate({ id, isChecked });
+      // Update local state after mutation succeeds
+      setThings((prev) =>
+        prev.map((thing) =>
+          thing.id === id ? { ...thing, isChecked } : thing
+        )
+      );
+    } catch (error) {
+      console.error("Error updating thing:", error);
+    }
+  };
+
+  const handleNextPage = () => {
+    setPage((prevPage) => prevPage + 1);
+  };
+
+  const handlePrevPage = () => {
+    setPage((prevPage) => Math.max(prevPage - 1, 1));
+  };
 
   return (
-    <div className="w-full max-w-xs">
-      
+    <div>
+      <TopHeader />
+      <Banner />
+      <div className="mt-10 flex justify-center">
+        <Card>
+          <h2 className="text-[32px] font-semibold leading-10 ">
+            Please Mark your Interest!
+          </h2>
+          <div className="mt-6 flex flex-col gap-3">
+            <p className="">We will keep you notified</p>
+          </div>
+          <div className="flex flex-col gap-4 border-b-[1px] py-7 text-start ">
+            <h2 className="text-xl font-medium">My saved Interest</h2>
+            <div>
+              {status === "pending" && <h2>Loading</h2>}
 
-      <CreatePost />
+              {status === "error" && <h2>Error: {error.message}</h2>}
+
+              {things?.map((thing) => (
+                <div key={thing.id} className="flex gap-3">
+                  <input
+                    className="accent-black"
+                    type="checkbox"
+                    checked={thing.isChecked}
+                    onChange={() =>
+                      handleCheckboxChange(thing.id, !thing.isChecked)
+                    }
+                  />
+                  <label htmlFor="">{thing.name}</label>
+                </div>
+              ))}
+
+              {/* Pagination controls */}
+              <div className="mt-4 flex justify-between text-blue-600">
+                <button
+                  onClick={handlePrevPage}
+                  disabled={page === 1}
+                >
+                  Previous
+                </button>
+                <div className="flex gap-4">
+
+
+                {Array(10).fill(0).map(( _, index)=> (
+                  <button key={index+1} className={page===index+1 ? 'underline' : ''} onClick={() => (setPage(index+1))}>{index+1}</button>
+                ))}
+                </div>
+                <button
+                  onClick={handleNextPage}
+                  disabled={data?.length < pageSize}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }

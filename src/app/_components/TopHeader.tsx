@@ -5,7 +5,7 @@ function TopHeader() {
     <div className='bg-primary  '>
 
     <div className='flex justify-end text-secondary '>
-            <div className=' py-3  px-10'>
+            <div className=' py-2  px-10'>
                 <ul className='flex text-xs gap-5'>
                     <li>Help</li>        
                     <li>Orders & Returns</li>
@@ -17,7 +17,7 @@ function TopHeader() {
             </div>
     </div>
 
-    <div className='pl-10  pt-1 pb-2 pr-8'>
+    <div className='pl-10 pb-2 pr-8'>
       <div className='flex justify-between items-center'>
         <div className='font-bold text-3xl'>
           <span className='uppercase'>ecommerce</span>

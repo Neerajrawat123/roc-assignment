@@ -1,3 +1,4 @@
+import { skip } from "node:test";
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
@@ -11,22 +12,27 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
-  create: publicProcedure
-    .input(z.object({ name: z.string().min(1) }))
+  modifyInterest: publicProcedure
+    .input(z.object({ id: z.number(), isChecked: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
-      // simulate a slow db call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      return ctx.db.post.create({
+      const { id, isChecked } = input;
+      return ctx.db.thing.update({
+        where: {
+          id: id,
+        },
         data: {
-          name: input.name,
+          isChecked: isChecked,
         },
       });
     }),
 
-  getLatest: publicProcedure.query(({ ctx }) => {
-    return ctx.db.post.findFirst({
-      orderBy: { createdAt: "desc" },
-    });
-  }),
+  getLatest: publicProcedure
+    .input(z.object({ from: z.number(), items: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const { from, items } = input;
+      return ctx.db.thing.findMany({
+        skip: from,
+        take: items,
+      });
+    }),
 });
