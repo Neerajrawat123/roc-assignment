@@ -1,16 +1,9 @@
-import { skip } from "node:test";
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 export const postRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
+ 
 
   modifyInterest: publicProcedure
     .input(z.object({ id: z.number(), isChecked: z.boolean() }))

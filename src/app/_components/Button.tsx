@@ -1,8 +1,12 @@
-import React from 'react'
+'use client'
 
-function Button({children}) {
+import { ReactNode } from "react"
+
+function Button({children, }:{children: ReactNode, }) {
+
+ 
   return (
-    <button className='bg-black text-white font-medium py-[18px] rounded-md mt-2 flex justify-center capitalize tracking-wider'>{children}</button>
+    <button type='submit' className='bg-black text-white font-medium py-[18px] rounded-md mt-2 flex justify-center capitalize tracking-wider'>{children}</button>
   )
 }
 
