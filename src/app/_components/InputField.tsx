@@ -5,7 +5,6 @@ function InputField({name, type}:{name:string, type:string}) {
   const inputRef = useRef<HTMLInputElement | null>(null)
 
   const handleClick = () => {
-    console.log('worked')
     if(inputRef?.current?.getAttribute('type') === 'password'){
       inputRef?.current?.setAttribute('type', 'text')
     }else{
